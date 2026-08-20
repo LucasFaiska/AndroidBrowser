@@ -4,7 +4,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,7 +56,6 @@ class BrowserViewTest {
         composeTestRule.onNodeWithText(context.getString(R.string.error_retry)).performClick()
 
         assertNull(state.error)
-        assertEquals(BrowserAction.Reload, state.pendingAction)
     }
 
     private fun assertNull(actual: Any?) {

@@ -36,37 +36,33 @@ class BrowserState(
 
     internal var webView: WebView? = null
 
-    internal var pendingAction by mutableStateOf<BrowserAction?>(
-        initialUrl?.let { BrowserAction.LoadUrl(it) }
-    )
-        private set
-
     fun loadUrl(url: String) {
         this.error = null
-        this.pendingAction = BrowserAction.LoadUrl(url)
+        this.url = url
+        webView?.loadUrl(url)
     }
 
     fun goBack() {
-        this.pendingAction = BrowserAction.GoBack
+        if (webView?.canGoBack() == true) {
+            webView?.goBack()
+        }
     }
 
     fun goForward() {
-        this.pendingAction = BrowserAction.GoForward
+        if (webView?.canGoForward() == true) {
+            webView?.goForward()
+        }
     }
 
     fun reload() {
         this.error = null
-        this.pendingAction = BrowserAction.Reload
+        webView?.reload()
     }
 
     fun clearError() {
         this.error = null
     }
-
-    internal fun consumeAction() {
-        pendingAction = null
-    }
-
+    
     companion object {
         val Saver: Saver<BrowserState, Bundle> = Saver(
             save = { state ->

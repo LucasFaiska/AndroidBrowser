@@ -46,17 +46,6 @@ fun BrowserView(
                     }
                 }
             },
-            update = { webView ->
-                state.pendingAction?.let { action ->
-                    when (action) {
-                        is BrowserAction.LoadUrl -> webView.loadUrl(action.url)
-                        is BrowserAction.GoBack -> webView.goBack()
-                        is BrowserAction.GoForward -> webView.goForward()
-                        is BrowserAction.Reload -> webView.reload()
-                    }
-                    state.consumeAction()
-                }
-            },
             onRelease = { webView ->
                 state.webView = null
                 webView.destroy()
