@@ -13,7 +13,7 @@ We implemented a pure-Kotlin `UrlResolver` using a deterministic decision tree a
 2. **Explicit Scheme Detection:** Inputs starting with `http://` or `https://` are treated directly as valid URLs.
 3. **Loopback & IP Detection:** Inputs matching `localhost` (with optional port) or valid IPv4 address patterns are prefixed with `http://` and resolved as URLs.
 4. **Bare Domain Heuristic:** Inputs matching a standard `domain.tld` structure (requiring a minimum 2-letter alphabetic TLD suffix and valid path/query characters) are prefixed with `https://`.
-5. **Fallback to Search Engine:** Any input failing the above checks is treated as a free-text search query.
+5. **Fallback to Search Result:** Any input failing the above checks is treated as a free-text search query, encapsulated in a result type that allows the browser to choose the search engine.
 
 ## Alternatives Considered & Rejected
 
