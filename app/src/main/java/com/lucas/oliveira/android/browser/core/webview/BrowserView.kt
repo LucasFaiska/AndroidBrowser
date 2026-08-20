@@ -40,6 +40,8 @@ fun BrowserView(
 
                     state.savedStateBundle?.let { bundle ->
                         restoreState(bundle)
+                        state.canGoBack = canGoBack()
+                        state.canGoForward = canGoForward()
                         state.savedStateBundle = null
                     }
                 }

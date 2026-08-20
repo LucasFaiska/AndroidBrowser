@@ -16,12 +16,8 @@ import androidx.compose.runtime.setValue
  */
 class BrowserState(
     initialUrl: String? = null,
-    initialTitle: String? = null
 ) {
     var url by mutableStateOf(initialUrl)
-        internal set
-
-    var title by mutableStateOf(initialTitle)
         internal set
 
     var isLoading by mutableStateOf(false)
@@ -76,20 +72,17 @@ class BrowserState(
             save = { state ->
                 Bundle().apply {
                     putString("current_url", state.url)
-                    putString("current_title", state.title)
                     putBoolean("can_go_back", state.canGoBack)
                     putBoolean("can_go_forward", state.canGoForward)
                     state.webView?.saveState(this)
                 }
             },
             restore = { bundle ->
-                BrowserState(
-                    initialUrl = bundle.getString("current_url"),
-                    initialTitle = bundle.getString("current_title")
-                ).apply {
-                    savedStateBundle = bundle
+                BrowserState().apply {
+                    url = bundle.getString("current_url")
                     canGoBack = bundle.getBoolean("can_go_back", false)
                     canGoForward = bundle.getBoolean("can_go_forward", false)
+                    savedStateBundle = bundle
                 }
             }
         )
@@ -110,11 +103,8 @@ data class BrowserError(
 )
 
 @Composable
-fun rememberBrowserState(
-    initialUrl: String? = null,
-    initialTitle: String? = null
-): BrowserState {
+fun rememberBrowserState(initialUrl: String? = null): BrowserState {
     return rememberSaveable(saver = BrowserState.Saver) {
-        BrowserState(initialUrl, initialTitle)
+        BrowserState(initialUrl)
     }
 }
