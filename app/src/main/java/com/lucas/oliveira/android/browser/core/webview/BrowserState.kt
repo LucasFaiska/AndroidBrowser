@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.lucas.oliveira.android.browser.core.bridge.SecureBridgeController
 
 /**
  * State holder for the BrowserView component.
@@ -31,6 +31,8 @@ class BrowserState(
 
     var error by mutableStateOf<BrowserError?>(null)
         internal set
+
+    var secureBridgeController: SecureBridgeController? = null
 
     internal var savedStateBundle: Bundle? = null
 

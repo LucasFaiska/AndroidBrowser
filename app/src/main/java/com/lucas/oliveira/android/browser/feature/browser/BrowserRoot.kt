@@ -14,6 +14,7 @@ fun BrowserRoot(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val browserState = rememberBrowserState()
+    browserState.secureBridgeController = viewModel.secureBridgeController
 
     BrowserScreen(
         uiState = uiState,

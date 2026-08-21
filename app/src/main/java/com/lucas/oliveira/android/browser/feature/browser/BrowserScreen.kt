@@ -1,5 +1,6 @@
 package com.lucas.oliveira.android.browser.feature.browser
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -14,27 +15,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lucas.oliveira.android.browser.R
+import com.lucas.oliveira.android.browser.core.bridge.PermissionDecision
 import com.lucas.oliveira.android.browser.core.webview.BrowserState
 import com.lucas.oliveira.android.browser.core.webview.BrowserView
-import com.lucas.oliveira.android.browser.core.webview.rememberBrowserState
 import kotlinx.coroutines.flow.Flow
 
 @Composable
@@ -49,6 +52,9 @@ fun BrowserScreen(
         effects.collect { effect ->
             when (effect) {
                 is BrowserSideEffect.LoadUrl -> browserState.loadUrl(effect.url)
+                is BrowserSideEffect.EvaluateJavascript -> {
+                    browserState.webView?.evaluateJavascript(effect.script, null)
+                }
             }
         }
     }
@@ -100,6 +106,54 @@ fun BrowserScreen(
                 .padding(top = innerPadding.calculateTopPadding()) // Aplica estritamente a altura exata da topBar
         )
     }
+
+    uiState.activeDialog?.let { dialog ->
+        PermissionDialog(dialog)
+    }
+}
+
+@Composable
+private fun PermissionDialog(
+    dialog: BridgeDialogState,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        onDismissRequest = {
+            dialog.onResponse(PermissionDecision.DENIED)
+        },
+        title = {
+            Text(stringResource(R.string.bridge_dialog_title))
+        },
+        text = {
+            Text(stringResource(R.string.bridge_dialog_message, dialog.origin))
+        },
+        confirmButton = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { dialog.onResponse(PermissionDecision.ALLOWED_ALWAYS) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.bridge_dialog_allow_always))
+                }
+                OutlinedButton(
+                    onClick = { dialog.onResponse(PermissionDecision.ALLOWED_ONCE) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.bridge_dialog_allow_once))
+                }
+                TextButton(
+                    onClick = { dialog.onResponse(PermissionDecision.DENIED) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.bridge_dialog_deny))
+                }
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @Composable

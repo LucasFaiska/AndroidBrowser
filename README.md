@@ -4,6 +4,8 @@
 
 ## 1. What was built
 
+To test the device bridge access: https://sparkling-feather-c0b4.lucas-faiskaa.workers.dev/
+
 ---
 
 ## 2. Key Architectural Decisions & Trade-offs

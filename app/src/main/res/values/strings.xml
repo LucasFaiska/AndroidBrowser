@@ -8,4 +8,9 @@
     <string name="content_description_forward">Forward</string>
     <string name="content_description_reload">Reload</string>
     <string name="address_bar_placeholder">Search or enter URL</string>
+    <string name="bridge_dialog_title">JavaScript Bridge Permission</string>
+    <string name="bridge_dialog_message">The website %1$s is requesting access to native features.</string>
+    <string name="bridge_dialog_allow_always">Always Allow</string>
+    <string name="bridge_dialog_allow_once">Allow Once</string>
+    <string name="bridge_dialog_deny">Deny</string>
 </resources>

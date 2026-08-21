@@ -1,18 +1,13 @@
 package com.lucas.oliveira.android.browser.core.webview
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.lucas.oliveira.android.browser.R
+import com.lucas.oliveira.android.browser.core.bridge.SecureJavascriptBridge
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -35,6 +30,13 @@ fun BrowserView(
                     }
 
                     webViewClient = BrowserWebViewClient(state, context.applicationContext)
+
+                    if (state.secureBridgeController != null) {
+                        addJavascriptInterface(
+                            SecureJavascriptBridge(state.secureBridgeController!!) { state.url },
+                            "AndroidBridgeNative"
+                        )
+                    }
 
                     state.webView = this
 
