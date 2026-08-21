@@ -12,11 +12,12 @@ class BrowserWebViewClient(
     private val state: BrowserState,
     private val context: Context
 ) : WebViewClient() {
+
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-        super.onPageStarted(view, url, favicon)
-        state.isLoading = true
-        state.url = url
         state.error = null
+        state.url = url
+        state.isLoading = true
+        super.onPageStarted(view, url, favicon)
         state.canGoBack = view?.canGoBack() ?: false
         state.canGoForward = view?.canGoForward() ?: false
     }
@@ -25,7 +26,9 @@ class BrowserWebViewClient(
         view: WebView?, url: String?, isReload: Boolean
     ) {
         super.doUpdateVisitedHistory(view, url, isReload)
-        url?.let { state.url = it }
+        if (url != null) {
+            state.url = url
+        }
         state.canGoBack = view?.canGoBack() ?: false
         state.canGoForward = view?.canGoForward() ?: false
     }
@@ -37,15 +40,29 @@ class BrowserWebViewClient(
         state.canGoForward = view?.canGoForward() ?: false
     }
 
+    override fun onPageCommitVisible(view: WebView?, url: String?) {
+        super.onPageCommitVisible(view, url)
+        state.isRendering = false
+    }
+
     override fun onReceivedError(
         view: WebView?, request: WebResourceRequest?, error: WebResourceError?
     ) {
         super.onReceivedError(view, request, error)
         if (request?.isForMainFrame == true) {
+            val errorCode = error?.errorCode ?: -1
+            val description = error?.description?.toString() ?: ""
+            if (errorCode == -3 ||
+                description == "net::ERR_ABORTED" ||
+                description == "ERR_ABORTED" ||
+                description.contains("ERR_ABORTED", ignoreCase = true)
+            ) {
+                return
+            }
+            state.isRendering = false
             state.error = BrowserError(
-                errorCode = error?.errorCode ?: -1,
-                description = error?.description?.toString()
-                    ?: context.getString(R.string.error_unknown),
+                errorCode = errorCode,
+                description = description.ifEmpty { context.getString(R.string.error_unknown) },
                 failingUrl = request.url?.toString() ?: ""
             )
         }

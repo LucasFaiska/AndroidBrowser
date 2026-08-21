@@ -10,10 +10,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.lucas.oliveira.android.browser.core.bridge.SecureBridgeController
 
-/**
- * State holder for the BrowserView component.
- * Manages the WebView state and provides methods for navigation.
- */
 class BrowserState(
     initialUrl: String? = null,
 ) {
@@ -21,6 +17,9 @@ class BrowserState(
         internal set
 
     var isLoading by mutableStateOf(false)
+        internal set
+
+    var isRendering by mutableStateOf(false)
         internal set
 
     var canGoBack by mutableStateOf(false)
@@ -39,6 +38,7 @@ class BrowserState(
     internal var webView: WebView? = null
 
     fun loadUrl(url: String) {
+        this.isRendering = true
         this.error = null
         this.url = url
         webView?.loadUrl(url)
@@ -46,17 +46,20 @@ class BrowserState(
 
     fun goBack() {
         if (webView?.canGoBack() == true) {
+            this.isRendering = true
             webView?.goBack()
         }
     }
 
     fun goForward() {
         if (webView?.canGoForward() == true) {
+            this.isRendering = true
             webView?.goForward()
         }
     }
 
     fun reload() {
+        this.isRendering = true
         this.error = null
         webView?.reload()
     }
@@ -64,7 +67,7 @@ class BrowserState(
     fun clearError() {
         this.error = null
     }
-    
+
     companion object {
         val Saver: Saver<BrowserState, Bundle> = Saver(
             save = { state ->
@@ -85,13 +88,6 @@ class BrowserState(
             }
         )
     }
-}
-
-sealed interface BrowserAction {
-    data class LoadUrl(val url: String) : BrowserAction
-    data object GoBack : BrowserAction
-    data object GoForward : BrowserAction
-    data object Reload : BrowserAction
 }
 
 data class BrowserError(
