@@ -39,6 +39,14 @@ import com.lucas.oliveira.android.browser.core.bridge.PermissionDecision
 import com.lucas.oliveira.android.browser.core.webview.BrowserState
 import com.lucas.oliveira.android.browser.core.webview.BrowserView
 import kotlinx.coroutines.flow.Flow
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 
 @Composable
 fun BrowserScreen(
@@ -168,6 +176,19 @@ private fun AddressBar(
     canGoForward: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(text = text, selection = TextRange(text.length)))
+    }
+
+    LaunchedEffect(text) {
+        if (text != textFieldValue.text) {
+            textFieldValue = TextFieldValue(text = text, selection = TextRange(text.length))
+        }
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -193,8 +214,11 @@ private fun AddressBar(
             )
         }
         OutlinedTextField(
-            value = text,
-            onValueChange = onTextChange,
+            value = textFieldValue,
+            onValueChange = { newValue ->
+                textFieldValue = newValue
+                onTextChange(newValue.text)
+            },
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 8.dp),
@@ -202,7 +226,13 @@ private fun AddressBar(
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-            keyboardActions = KeyboardActions(onGo = { onSubmit() })
+            keyboardActions = KeyboardActions(
+                onGo = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                    onSubmit()
+                }
+            )
         )
     }
 }
