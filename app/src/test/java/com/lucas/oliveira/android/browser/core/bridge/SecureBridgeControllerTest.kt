@@ -208,6 +208,61 @@ class SecureBridgeControllerTest {
         assertEquals("Error: Permission Denied", lastResolveData)
     }
 
+    @Test
+    fun `handleInteraction with malicious callback name containing injection characters drops request`() {
+        permissionStore.setPermission("https://example.com", PermissionDecision.ALLOWED_ALWAYS)
+
+        val maliciousCallback = "onDeviceInfoReceived'); alert('pwned'); //"
+        controller.handleInteraction("https://example.com", maliciousCallback)
+
+        assertFalse(resolveTriggered)
+        assertFalse(dialogTriggered)
+    }
+
+    @Test
+    fun `handleInteraction with callback name containing spaces drops request`() {
+        permissionStore.setPermission("https://example.com", PermissionDecision.ALLOWED_ALWAYS)
+
+        controller.handleInteraction("https://example.com", "invalid callback name")
+
+        assertFalse(resolveTriggered)
+        assertFalse(dialogTriggered)
+    }
+
+    @Test
+    fun `handleInteraction with empty or blank callback name drops request`() {
+        permissionStore.setPermission("https://example.com", PermissionDecision.ALLOWED_ALWAYS)
+
+        controller.handleInteraction("https://example.com", "")
+        controller.handleInteraction("https://example.com", "   ")
+
+        assertFalse(resolveTriggered)
+        assertFalse(dialogTriggered)
+    }
+
+    @Test
+    fun `handleInteraction with callback name exceeding 64 chars drops request`() {
+        permissionStore.setPermission("https://example.com", PermissionDecision.ALLOWED_ALWAYS)
+
+        val longCallback = "a".repeat(65)
+        controller.handleInteraction("https://example.com", longCallback)
+
+        assertFalse(resolveTriggered)
+        assertFalse(dialogTriggered)
+    }
+
+    @Test
+    fun `handleInteraction with valid callback containing alphanumeric, underscores and hyphens succeeds`() {
+        permissionStore.setPermission("https://example.com", PermissionDecision.ALLOWED_ALWAYS)
+
+        val validCallback = "valid_callback-Identifier_123"
+        controller.handleInteraction("https://example.com", validCallback)
+
+        assertTrue(resolveTriggered)
+        assertEquals(validCallback, lastResolveCallbackName)
+        assertTrue(lastResolveData?.contains("appVersion") ?: false)
+    }
+
     private class FakeBridgePermissionStore : BridgePermissionStore {
         private val map = mutableMapOf<String, PermissionDecision>()
         override fun getPermission(origin: String): PermissionDecision = map[origin] ?: PermissionDecision.UNDETERMINED

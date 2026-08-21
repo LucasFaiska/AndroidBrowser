@@ -1,12 +1,11 @@
 package com.lucas.oliveira.android.browser.core.webview
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.net.Uri
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.test.core.app.ApplicationProvider
+import com.lucas.oliveira.android.browser.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -117,6 +116,93 @@ class BrowserWebViewClientTest {
         client.onReceivedError(webView, mockRequest, mockError)
 
         assertNull(state.error)
+    }
+
+    @Test
+    fun `onPageCommitVisible should set isRendering to false`() {
+        state.isRendering = true
+
+        client.onPageCommitVisible(webView, "https://example.com")
+
+        assertFalse(state.isRendering)
+    }
+
+    @Test
+    fun `doUpdateVisitedHistory with null url should not overwrite existing url`() {
+        state.url = "https://existing.url"
+
+        client.doUpdateVisitedHistory(webView, null, false)
+
+        assertEquals("https://existing.url", state.url)
+    }
+
+    @Test
+    fun `onReceivedError with ERR_ABORTED error code -3 should early return without setting error`() {
+        state.error = null
+        state.isRendering = true
+
+        val mockRequest = object : WebResourceRequest {
+            override fun getUrl(): Uri = Uri.parse("https://example.com/aborted")
+            override fun isForMainFrame(): Boolean = true
+            override fun isRedirect(): Boolean = false
+            override fun hasGesture(): Boolean = false
+            override fun getMethod(): String = "GET"
+            override fun getRequestHeaders(): Map<String, String> = emptyMap()
+        }
+
+        val mockError = android.webkit.TestWebResourceError(-3, "Some message")
+
+        client.onReceivedError(webView, mockRequest, mockError)
+
+        assertNull(state.error)
+        assertTrue(state.isRendering)
+    }
+
+    @Test
+    fun `onReceivedError with net ERR_ABORTED in description should early return without setting error`() {
+        state.error = null
+        state.isRendering = true
+
+        val mockRequest = object : WebResourceRequest {
+            override fun getUrl(): Uri = Uri.parse("https://example.com/aborted")
+            override fun isForMainFrame(): Boolean = true
+            override fun isRedirect(): Boolean = false
+            override fun hasGesture(): Boolean = false
+            override fun getMethod(): String = "GET"
+            override fun getRequestHeaders(): Map<String, String> = emptyMap()
+        }
+
+        val mockError = android.webkit.TestWebResourceError(-1, "net::ERR_ABORTED")
+
+        client.onReceivedError(webView, mockRequest, mockError)
+
+        assertNull(state.error)
+        assertTrue(state.isRendering)
+    }
+
+    @Test
+    fun `onReceivedError with empty description should fallback to unknown error string`() {
+        state.error = null
+        state.isRendering = true
+
+        val mockRequest = object : WebResourceRequest {
+            override fun getUrl(): Uri = Uri.parse("https://example.com/empty-desc")
+            override fun isForMainFrame(): Boolean = true
+            override fun isRedirect(): Boolean = false
+            override fun hasGesture(): Boolean = false
+            override fun getMethod(): String = "GET"
+            override fun getRequestHeaders(): Map<String, String> = emptyMap()
+        }
+
+        val mockError = android.webkit.TestWebResourceError(-1, "")
+
+        client.onReceivedError(webView, mockRequest, mockError)
+
+        assertNotNull(state.error)
+        assertFalse(state.isRendering)
+        assertEquals(-1, state.error?.errorCode)
+        assertEquals(context.getString(R.string.error_unknown), state.error?.description)
+        assertEquals("https://example.com/empty-desc", state.error?.failingUrl)
     }
 
     private class TestWebView(context: Context) : WebView(context) {

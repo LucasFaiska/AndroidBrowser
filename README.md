@@ -46,3 +46,7 @@ AI (Gemini) was used during architectural planning and code scaffolding, functio
 ### Implementation & Scaffolding
 * **Boilerplate & Test Generation:** Used Android Studio's assistant to scaffold data classes, Hilt bindings, and expand edge-case coverage in unit test suites.
 * **Active Refactoring & Curation:** Filtered out overengineered abstractions (such as unnecessary wrapper classes and generic composable slots) to keep class contracts cohesive, explicit, and idiomatic to modern Kotlin and Android development.
+
+### Threat Modeling & Post-Implementation Security Research
+Following the implementation, Gemini was used to conduct a proactive threat modeling review on the WebView integration. This targeted security audit identified two critical edge-case vulnerabilities to be mitigated:
+* **JavaScript Callback Injection:** Identified potential injection surfaces where unsanitized callback identifiers passed from the DOM could lead to arbitrary script execution or prototype pollution during `evaluateJavascript` invocations, requiring strict identifier validation.

@@ -8,6 +8,10 @@ class SecureBridgeController(
     private val onResolveInteraction: (callbackName: String, data: String) -> Unit
 ) {
     fun handleInteraction(currentUrl: String?, callbackName: String) {
+        if (!SAFE_CALLBACK_REGEX.matches(callbackName)) {
+            return
+        }
+
         val origin = extractOrigin(currentUrl)
         if (origin == null) {
             onResolveInteraction(callbackName, "Error: Invalid Origin")
@@ -58,5 +62,9 @@ class SecureBridgeController(
                 "$scheme://$host"
             }
         }.getOrNull()
+    }
+
+    companion object {
+        private val SAFE_CALLBACK_REGEX = Regex("^[a-zA-Z0-9_-]{1,64}$")
     }
 }
